@@ -22,7 +22,7 @@ APP_KEY="Key of Function App where you deployed your functions"
 
 LOCAL_SERVER="http://localhost:7071/api"
 #Replace below as appropriate
-CLOUD_SERVER="The URI of the FunctionApp where you deployed in your Azure account"
+CLOUD_SERVER="https://cw1-johnbaker.azurewebsites.net/api"
 
 def player_register(the_input,local=True):
     """
