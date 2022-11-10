@@ -26,9 +26,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     username = req_body.get('username')
     password = req_body.get('password')
 
-    if not username:
+    if username == None:
         return func.HttpResponse(status_code=400, body="Username is required")
-    if not password:
+    if password == None:
         return func.HttpResponse(status_code=400, body="Password is required")
 
     # check username length
@@ -56,7 +56,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     user = {
         "id": username,
-        # "username" : username,
+        "username" : username,
         "password": password,
         "games_played": 0,
         "total_score": 0

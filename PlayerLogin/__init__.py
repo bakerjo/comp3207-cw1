@@ -26,9 +26,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     username = req_body.get('username')
     password = req_body.get('password')
 
-    if not username:
+    if username == None:
         return func.HttpResponse(status_code=400, body="Username is required")
-    if not password:
+    if password == None:
         return func.HttpResponse(status_code=400, body="Password is required")
 
     client = cosmos.CosmosClient.from_connection_string(

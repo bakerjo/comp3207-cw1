@@ -22,18 +22,18 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(status_code=400, body="No body")
 
     # check if the request body has the required fields
-    id = req_body.get('id')
+    id = str(req_body.get('id'))
     username = req_body.get('username')
     password = req_body.get('password')
 
     # check body contains all required fields
-    if not username:
+    if username == None:
         logging.info("No username")
         return func.HttpResponse(status_code=400, body="Username is required")
-    if not password:
+    if password == None:
         logging.info("No password")
         return func.HttpResponse(status_code=400, body="Password is required")
-    if not id:
+    if id == None:
         logging.info("No id")
         return func.HttpResponse(status_code=400, body="Id is required")
 

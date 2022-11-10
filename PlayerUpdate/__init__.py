@@ -30,24 +30,29 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     add_gp = req_body.get('add_to_games_played')
     add_score = req_body.get('add_to_score')
 
-    if not username:
+    if username == None:
+        logging.info('Username not provided')
         return func.HttpResponse(status_code=400, body="Username is required")
-    if not password:
+    if password == None:
+        logging.info("no password")
         return func.HttpResponse(status_code=400, body="Password is required")
-    if not add_gp and not add_score:
+    if (add_gp == None) and (add_score == None):
+        logging.info("No attributes to update")
         return func.HttpResponse(status_code=400, body="No fields to update")
-    if add_gp and not isinstance(add_gp, int):
+    if (add_gp != None) and not isinstance(add_gp, int):
+        logging.info(add_gp + " is not an int")
         return func.HttpResponse(status_code=400, body="Games played must be an integer")
-    if add_score and not isinstance(add_score, int):
+    if (add_score != None) and not isinstance(add_score, int):
+        logging.info(add_score + " is not an int")
         return func.HttpResponse(status_code=400, body="Score must be an integer")
-    if add_gp and add_gp <= 0:
+    if (add_gp != None) and add_gp <= 0:
         logging.info("Games played must be positive")
         resp = {
             "result": False,
             "msg": "Value to add is <=0"
         }
         return func.HttpResponse(status_code=400, body=json.dumps(resp))
-    if add_score and add_score <= 0:
+    if (add_score != None) and add_score <= 0:
         logging.info("Score must be positive")
         resp = {
             "result": False,

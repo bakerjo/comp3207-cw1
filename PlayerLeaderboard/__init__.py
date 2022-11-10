@@ -25,7 +25,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     # check if the request body has the required fields
     top = req_body.get('top')
 
-    if not top:
+    if top == None:
         return func.HttpResponse(status_code=400, body="Top is required")
     
     if not isinstance(top, int):
@@ -56,7 +56,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     )
     
     logging.info("Returning top players")
-    
-    return func.HttpResponse(status_code=200, body=json.dumps(list(top_players)))
+    refactored_top_players = []
+    for player in top_players:
+        player["score"] = player.pop("total_score")
+        refactored_top_players.append(player)
+    return func.HttpResponse(status_code=200, body=json.dumps(list(refactored_top_players)))
     
     

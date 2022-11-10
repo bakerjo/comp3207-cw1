@@ -31,16 +31,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
 
     #check body contains all required fields
-    if not username:
+    if username == None:
         logging.info("No username")
         return func.HttpResponse(status_code=400, body="Username is required")
-    if not password:
+    if password == None:
         logging.info("No password")
         return func.HttpResponse(status_code=400, body="Password is required")
-    if not text:
+    if text == None:
         logging.info("No text")
         return func.HttpResponse(status_code=400, body="Text is required")
-    if not id:
+    if id == None:
         logging.info("No id")
         return func.HttpResponse(status_code=400, body="Id is required")
     
@@ -48,7 +48,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     if len(text) < 20 or len(text) > 100:
         resp = {
             "result": False,
-            "msg": "prompt length is <20 or > 100 characters"
+            "msg": "prompt length is <20 or >100 characters"
         }
         return func.HttpResponse(status_code=400, body=json.dumps(resp))
     
@@ -82,68 +82,69 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     
     prompts_container = database.get_container_client("prompts")
     
+    try:
+        prompt = prompts_container.read_item(item=str(id), partition_key=str(id))
+        # prompt = list(prompts_container.query_items(
+        #     "SELECT * FROM c WHERE c.id = @id",
+        #     parameters=[dict(name="@id", value=id)],
+        #     enable_cross_partition_query=True
+        # ))[0]
+    except Exception as e:
+        logging.info("Prompt not found: " + str(e))
+        resp = {
+            "result": False,
+            "msg" : "prompt id does not exist"
+        }
+        return func.HttpResponse(status_code=400, body=json.dumps(resp))
+    
+    
+    logging.info("Prompt: " + str(prompt))
+    # resp = {
+    #     "result": True,
+    #     "msg": "OK"
+    # }
+    # return func.HttpResponse(status_code=200, body=json.dumps(resp))
+    
+    
     #get users prompts
     user_prompts = prompts_container.query_items(
-        query="SELECT c.text, c.id FROM c WHERE c.username = @username",
+        query="SELECT c.text FROM c WHERE c.username = @username",
         parameters=[
             { "name":"@username", "value":username }
         ],
         enable_cross_partition_query=True
     )
     
-    #check prompt belongs to user
-    temp = False
-    for prompt in user_prompts:
-        if prompt['id'] == id:
-            temp = True
-            break
-    if not temp:
-        logging.info("Prompt not found")
-        resp = {
-            "result": False,
-            "msg": "prompt id does not exist"
-        }
-        return func.HttpResponse(status_code=400, body=json.dumps(resp))
-        
-    
-    #check text is unique
-    for prompt in user_prompts:
-        if prompt['text'] == text:
-            logging.info("Prompt already exists")
+    for user_prompt in user_prompts:
+        if user_prompt['text'] == text:
             resp = {
                 "result": False,
                 "msg": "This user already has a prompt with the same text"
             }
             return func.HttpResponse(status_code=400, body=json.dumps(resp))
-        
     
-  
-    
-    #create new prompt
     new_prompt = {
-        "id" : id,
-        "username": username,
-        "text": text
+        "id" : str(id),
+        "username": str(username),
+        "text": str(text)
     }
     
     try:
-        logging.info("Editing prompt")
-        prompts_container.upsert_item(new_prompt)
-    except errors.CosmosResourceExistsError:
-        logging.info("Prompt already exists")
+        prompts_container.upsert_item(body=new_prompt)
+        resp = {
+            "result": True,
+            "msg": "OK"
+        }
+        return func.HttpResponse(status_code=200, body=json.dumps(resp))
+    except Exception as e:
+        logging.error("Error updating prompt: " + str(e))
         resp = {
             "result": False,
-            "msg": "This user already has a prompt with the same text"
+            "msg": "Error updating prompt"
         }
-        return func.HttpResponse(status_code=400, body=json.dumps(resp))
-    except:
-        logging.info("Error creating prompt")
-        return func.HttpResponse(status_code=500, body="Error creating prompt")
+        return func.HttpResponse(status_code=500, body=json.dumps(resp))
+        
+        
     
-    logging.info("Prompt created")
-    resp = {
-        "result": True,
-        "msg": "OK"
-    }
-    return func.HttpResponse(status_code=200, body=json.dumps(resp))
+    
     
