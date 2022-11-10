@@ -13,16 +13,19 @@ Purposes of this file
 
 
 """
+import TestCloud as tc
+import dotenv
 
 #Note this requirement, in case you run this from outside the venv you are working on
 import requests
+import logging
 # Set the 'function' authorization level on your deployment
 # Put the relevant App key here (Refer to Lecture Thursday Week 4)
-APP_KEY="Key of Function App where you deployed your functions"
+APP_KEY=dotenv.get_key('.env','APP_KEY')
 
-LOCAL_SERVER="http://localhost:7071/api"
+LOCAL_SERVER=dotenv.get_key('.env','LOCAL_SERVER')
 #Replace below as appropriate
-CLOUD_SERVER="https://cw1-johnbaker.azurewebsites.net/api"
+CLOUD_SERVER=dotenv.get_key('.env','CLOUD_SERVER')
 
 def player_register(the_input,local=True):
     """
@@ -34,11 +37,13 @@ def player_register(the_input,local=True):
         prefix = LOCAL_SERVER 
     else:
         prefix = CLOUD_SERVER
-         
+        
     response = requests.post(prefix+'/player/register', json=the_input, 
             headers={'x-functions-key' : APP_KEY })
     output = response.json()
     return output
+
+
 
 def player_login(the_input,local=True):
     """
@@ -164,7 +169,9 @@ def prompts_getText(the_input,local=True):
 def tests():
     # you may use this function for your own testing
     # You should remove your testing before submitting your CW
+    
     print("Your own testing that you can call functions from here")
+    tc.run_tests()
 
 if __name__ == '__main__':
     #If the script is called from the console or inside an IDE
